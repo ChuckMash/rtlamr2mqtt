@@ -25,6 +25,7 @@ options:
     max_scan_time: 0
     verbosity: info
     listen_mode: false
+    expose_attributes: false
   custom_parameters: {}
   mqtt:
     ha_autodiscovery_topic: homeassistant
@@ -41,6 +42,7 @@ schema:
     device_id: "int?"
     rtltcp_host: "str?"
     listen_mode: "bool?"
+    expose_attributes: "bool?"
   mqtt:
     host: "str?"
     port: "int?"
