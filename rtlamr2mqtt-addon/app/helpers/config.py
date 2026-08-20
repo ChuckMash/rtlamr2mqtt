@@ -121,10 +121,11 @@ def load_config(config_path=None):
     meters_allowed_keys = [
         'id', 'protocol', 'name', 'format', 'unit_of_measurement',
         'icon', 'device_class', 'state_class', 'expire_after',
-        'force_update', 'manufacturer', 'model',
+        'force_update', 'manufacturer', 'model', 'must_find',
     ]
     for m in config.get('meters') or []:
         m['state_class'] = m.get('state_class', 'total_increasing')
+        m['must_find'] = bool(m.get('must_find', False))
         meters[str(m['id'])] = {key: value for key, value in m.items() if key in meters_allowed_keys}
 
     return ('success', 'Config loaded successfully', {
