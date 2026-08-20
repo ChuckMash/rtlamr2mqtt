@@ -23,8 +23,10 @@ services:
 options:
   general:
     sleep_for: 60
+    max_scan_time: 0
     verbosity: info
     listen_mode: false
+    expose_attributes: false
   custom_parameters: {}
   mqtt:
     ha_autodiscovery_topic: homeassistant
@@ -36,10 +38,12 @@ options:
 schema:
   general:
     sleep_for: "int?"
+    max_scan_time: "int?"
     verbosity: "list(debug|info|warning|critical|none)?"
     device_id: "int?"
     rtltcp_host: "str?"
     listen_mode: "bool?"
+    expose_attributes: "bool?"
   mqtt:
     host: "str?"
     port: "int?"
@@ -70,3 +74,4 @@ schema:
       force_update: bool?
       manufacturer: "str?"
       model: "str?"
+      must_find: "bool?"
