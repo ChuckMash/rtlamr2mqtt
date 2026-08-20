@@ -79,6 +79,7 @@ def load_config(config_path=None):
 
     # General section
     general['listen_mode'] = bool(general.get('listen_mode', False))
+    general['scan_for'] = int(general.get('scan_for', 0))
     general['sleep_for'] = int(general.get('sleep_for', 0))
     general['verbosity'] = str(general.get('verbosity', 'info'))
     general['device_id'] = int(general.get('device_id', 0))
