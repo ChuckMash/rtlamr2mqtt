@@ -34,6 +34,7 @@ class MeterReader:
         self.shutdown_event = shutdown_event
         self.is_remote = is_remote
         self.meter_ids = list(config['meters'].keys())
+        self.must_find_ids = {mid for mid, cfg in config['meters'].items() if cfg.get('must_find')}
         self.sleep_for = config['general']['sleep_for']
         self.max_scan_time = config['general']['max_scan_time']
         self.rtltcp_host = config['general']['rtltcp_host']
@@ -80,13 +81,28 @@ class MeterReader:
                 if scan_deadline is not None:
                     remaining = scan_deadline - asyncio.get_event_loop().time()
                     if remaining <= 0:
-                        logger.info('Max scan time of %d seconds reached', self.max_scan_time)
-                        break
-                    try:
-                        line = await asyncio.wait_for(self.rtlamr.read_line(), timeout=remaining)
-                    except asyncio.TimeoutError:
-                        logger.info('Max scan time of %d seconds reached', self.max_scan_time)
-                        break
+                        if self.must_find_ids <= meters_seen:
+                            logger.info('Max scan time of %d seconds reached', self.max_scan_time)
+                            break
+                        logger.debug(
+                            'Max scan time reached but must_find meter(s) missing, '
+                            'seen %d/%d meters',
+                            len(meters_seen), len(self.meter_ids),
+                        )
+                        line = await self.rtlamr.read_line()
+                    else:
+                        try:
+                            line = await asyncio.wait_for(self.rtlamr.read_line(), timeout=remaining)
+                        except asyncio.TimeoutError:
+                            if self.must_find_ids <= meters_seen:
+                                logger.info('Max scan time of %d seconds reached', self.max_scan_time)
+                                break
+                            logger.debug(
+                                'Max scan time reached but must_find meter(s) missing, '
+                                'seen %d/%d meters',
+                                len(meters_seen), len(self.meter_ids),
+                            )
+                            line = await self.rtlamr.read_line()
                 else:
                     line = await self.rtlamr.read_line()
 
