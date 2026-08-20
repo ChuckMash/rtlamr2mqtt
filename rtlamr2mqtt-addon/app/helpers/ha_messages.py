@@ -5,11 +5,9 @@ Helper functions for writing MQTT payloads
 import helpers.info as i
 
 
-def meter_discover_payload(base_topic, meter_config, extra_fields=None):
+def meter_discover_payload(base_topic, meter_config):
     """
     Returns the discovery payload for Home Assistant.
-    `extra_fields` (optional) adds one disabled-by-default diagnostic
-    sensor per key seen in the attributes JSON (e.g. BackFlow, Leak).
     """
     meter_id = meter_config['id']
     meter_name = meter_config.get('name', 'Unknown Meter')
@@ -31,28 +29,6 @@ def meter_discover_payload(base_topic, meter_config, extra_fields=None):
         if key in meter_config:
             reading_component[key] = meter_config[key]
 
-    components = {
-        f'{meter_id}_reading': reading_component,
-        f'{meter_id}_lastseen': {
-            'platform': 'sensor',
-            'name': 'Last Seen',
-            'device_class': 'timestamp',
-            'value_template': '{{ value_json.lastseen }}',
-            'unique_id': f'{meter_id}_lastseen',
-        },
-    }
-
-    for field in extra_fields or []:
-        components[f'{meter_id}_{field.lower()}'] = {
-            'platform': 'sensor',
-            'name': field,
-            'state_topic': f'{base_topic}/{meter_id}/attributes',
-            'value_template': f'{{{{ value_json.{field} }}}}',
-            'entity_category': 'diagnostic',
-            'enabled_by_default': False,
-            'unique_id': f'{meter_id}_{field.lower()}',
-        }
-
     return {
         'device': {
             'identifiers': [f'meter_{meter_id}'],
@@ -68,7 +44,16 @@ def meter_discover_payload(base_topic, meter_config, extra_fields=None):
             'sw_version': i.version(),
             'support_url': i.origin_url(),
         },
-        'components': components,
+        'components': {
+            f'{meter_id}_reading': reading_component,
+            f'{meter_id}_lastseen': {
+                'platform': 'sensor',
+                'name': 'Last Seen',
+                'device_class': 'timestamp',
+                'value_template': '{{ value_json.lastseen }}',
+                'unique_id': f'{meter_id}_lastseen',
+            },
+        },
         'state_topic': f'{base_topic}/{meter_id}/state',
         'availability_topic': f'{base_topic}/status',
         'qos': 1,
