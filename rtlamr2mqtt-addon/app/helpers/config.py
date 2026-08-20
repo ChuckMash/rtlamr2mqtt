@@ -81,6 +81,7 @@ def load_config(config_path=None):
     general['listen_mode'] = bool(general.get('listen_mode', False))
     general['sleep_for'] = int(general.get('sleep_for', 0))
     general['max_scan_time'] = int(general.get('max_scan_time', 0))
+    general['expose_attributes'] = bool(general.get('expose_attributes', False))
     general['verbosity'] = str(general.get('verbosity', 'info'))
     general['device_id'] = int(general.get('device_id', 0))
     general['rtltcp_host'] = str(general.get('rtltcp_host', '127.0.0.1:1234'))
