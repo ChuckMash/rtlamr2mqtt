@@ -34,7 +34,9 @@ class MeterReader:
         self.shutdown_event = shutdown_event
         self.is_remote = is_remote
         self.meter_ids = list(config['meters'].keys())
-        self.must_find_ids = {mid for mid, cfg in config['meters'].items() if cfg.get('must_find')}
+        self.must_find_ids = {
+            mid for mid, cfg in config['meters'].items() if cfg.get('must_find')
+        }
         self.sleep_for = config['general']['sleep_for']
         self.max_scan_time = config['general']['max_scan_time']
         self.rtltcp_host = config['general']['rtltcp_host']
@@ -75,6 +77,8 @@ class MeterReader:
                 asyncio.get_event_loop().time() + self.max_scan_time
                 if self.max_scan_time > 0 else None
             )
+            if scan_deadline is not None:
+                logger.info('Starting scan with max scan time of %d seconds', self.max_scan_time)
 
             # Read until shutdown, all meters seen, or max_scan_time elapsed
             while not self.shutdown_event.is_set():
@@ -85,7 +89,7 @@ class MeterReader:
                             logger.info('Max scan time of %d seconds reached', self.max_scan_time)
                             break
                         logger.debug(
-                            'Max scan time reached but must_find meter(s) missing, '
+                            'Max scan time reached but must_find meters missing, '
                             'seen %d/%d meters',
                             len(meters_seen), len(self.meter_ids),
                         )
@@ -98,7 +102,7 @@ class MeterReader:
                                 logger.info('Max scan time of %d seconds reached', self.max_scan_time)
                                 break
                             logger.debug(
-                                'Max scan time reached but must_find meter(s) missing, '
+                                'Max scan time reached but must_find meters missing, '
                                 'seen %d/%d meters',
                                 len(meters_seen), len(self.meter_ids),
                             )
