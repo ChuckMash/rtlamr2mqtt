@@ -88,8 +88,8 @@ class MeterReader:
                     if remaining <= 0:
                         if self.must_find_ids <= meters_seen:
                             logger.info(
-                                'Max scan time of %d seconds reached, %d/%d meters seen',
-                                self.max_scan_time, len(meters_seen), len(self.meter_ids),
+                                '%d/%d meters seen',
+                                len(meters_seen), len(self.meter_ids),
                             )
                             break
                         if not logged_must_find_wait:
@@ -102,8 +102,8 @@ class MeterReader:
                         except asyncio.TimeoutError:
                             if self.must_find_ids <= meters_seen:
                                 logger.info(
-                                    'Max scan time of %d seconds reached, %d/%d meters seen',
-                                    self.max_scan_time, len(meters_seen), len(self.meter_ids),
+                                    '%d/%d meters seen',
+                                    len(meters_seen), len(self.meter_ids),
                                 )
                                 break
                             if not logged_must_find_wait:
