@@ -41,6 +41,8 @@ class MQTTPublisher:
         self.meters = config['meters']
         self.reading_queue = reading_queue
         self.shutdown_event = shutdown_event
+        self.expose_attributes = config['general']['expose_attributes']
+        self.discovered_fields = {}
 
         # Build TLS context if enabled
         self.tls_context = None
@@ -177,7 +179,9 @@ class MQTTPublisher:
         Publish HA MQTT discovery messages for all configured meters.
         """
         for meter_id, meter_config in self.meters.items():
-            discovery_payload = ha_msgs.meter_discover_payload(self.base_topic, meter_config)
+            discovery_payload = ha_msgs.meter_discover_payload(
+                self.base_topic, meter_config, self.discovered_fields.get(meter_id)
+            )
             topic = f'{self.ha_autodiscovery_topic}/device/{meter_id}/config'
             await client.publish(
                 topic=topic,
@@ -226,6 +230,13 @@ class MQTTPublisher:
         )
 
         logger.info('Published reading for meter %s: %s', meter_id, formatted)
+
+        # Publish discovery again if this reading revealed new attribute fields
+        if self.expose_attributes:
+            new_fields = set(attributes) - self.discovered_fields.get(meter_id, set())
+            if new_fields:
+                self.discovered_fields[meter_id] = self.discovered_fields.get(meter_id, set()) | new_fields
+                await self.publish_discovery(client)
 
     async def _periodic_discovery(self, client: aiomqtt.Client, interval: int = 300):
         """
