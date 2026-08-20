@@ -35,7 +35,7 @@ class MeterReader:
         self.is_remote = is_remote
         self.meter_ids = list(config['meters'].keys())
         self.sleep_for = config['general']['sleep_for']
-        self.scan_for = config['general']['scan_for']
+        self.max_scan_time = config['general']['max_scan_time']
         self.rtltcp_host = config['general']['rtltcp_host']
         self.listen_mode = config['general']['listen_mode']
         self._seen_ids: set = set()
@@ -71,21 +71,21 @@ class MeterReader:
         while not self.shutdown_event.is_set():
             meters_seen = set()
             scan_deadline = (
-                asyncio.get_event_loop().time() + self.scan_for
-                if self.scan_for > 0 else None
+                asyncio.get_event_loop().time() + self.max_scan_time
+                if self.max_scan_time > 0 else None
             )
 
-            # Read until shutdown, all meters seen, or scan_for elapsed
+            # Read until shutdown, all meters seen, or max_scan_time elapsed
             while not self.shutdown_event.is_set():
                 if scan_deadline is not None:
                     remaining = scan_deadline - asyncio.get_event_loop().time()
                     if remaining <= 0:
-                        logger.info('Scan duration of %d seconds reached', self.scan_for)
+                        logger.info('Max scan time of %d seconds reached', self.max_scan_time)
                         break
                     try:
                         line = await asyncio.wait_for(self.rtlamr.read_line(), timeout=remaining)
                     except asyncio.TimeoutError:
-                        logger.info('Scan duration of %d seconds reached', self.scan_for)
+                        logger.info('Max scan time of %d seconds reached', self.max_scan_time)
                         break
                 else:
                     line = await self.rtlamr.read_line()
