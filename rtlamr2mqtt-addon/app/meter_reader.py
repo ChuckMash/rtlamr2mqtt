@@ -75,7 +75,7 @@ class MeterReader:
             meters_seen = set()
             scan_deadline = (
                 asyncio.get_event_loop().time() + self.max_scan_time
-                if self.max_scan_time > 0 else None
+                if self.max_scan_time > 0 and not self.listen_mode else None
             )
             if scan_deadline is not None:
                 logger.info('Starting scan with max scan time of %d seconds', self.max_scan_time)
